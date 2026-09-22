@@ -14,9 +14,6 @@ import (
 )
 
 const (
-	// default source
-	sourceAddr = "79232501250"
-
 	// TypeOfNumber (TON)
 	tonUNKNOWN           = 0
 	tonINTERNATIONAL     = 1
