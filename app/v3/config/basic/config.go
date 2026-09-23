@@ -1,7 +1,6 @@
 package basic
 
 import (
-	"github.com/evaxio/arcella-lib/utils"
 	"errors"
 	"os"
 	"path/filepath"
@@ -9,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/evaxio/arcella-lib/utils"
 
 	"log/slog"
 
@@ -39,6 +40,10 @@ type BasicConfig struct {
 
 func NewBasicConfig(cfg any) *BasicConfig {
 	return &BasicConfig{cfg: cfg, decoder: NewDecoder()}
+}
+
+func NewBasicConfigWithDecoder(cfg any, inDecoder ConfigManagerDecoder) *BasicConfig {
+	return &BasicConfig{cfg: cfg, decoder: inDecoder}
 }
 
 // Load loading config from file or env:

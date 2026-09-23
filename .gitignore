@@ -1,0 +1,25 @@
+# Idea
+.idea
+*.iws
+*.iml
+*.ipr
+*.log
+*.test
+*.out
+
+# Secrets & config
+config.yml
+*.kdbx
+*.kdb
+
+# Binaries for programs and plugins
+*.apk
+*.exe
+*.exe~
+*.dll
+*.so
+*.app
+*.dylib
+
+*.zip
+*.gz
