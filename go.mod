@@ -1,4 +1,4 @@
-module axgit.vixiv.ru/snake/arcella-lib
+module github.com/evaxio/arcella-lib
 
 go 1.26.6
 

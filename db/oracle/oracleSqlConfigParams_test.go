@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"axgit.vixiv.ru/snake/arcella-lib/app/v3/config/basic"
+	"github.com/evaxio/arcella-lib/app/v3/config/basic"
 )
 
 func TestConfigOracleDBDefaults(t *testing.T) {

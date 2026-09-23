@@ -1,7 +1,7 @@
 package client
 
 import (
-	appPkgWeb "axgit.vixiv.ru/snake/arcella-lib/web"
+	appPkgWeb "github.com/evaxio/arcella-lib/web"
 	"bytes"
 	"compress/gzip"
 	"crypto/tls"

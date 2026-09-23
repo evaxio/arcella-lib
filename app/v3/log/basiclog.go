@@ -1,7 +1,7 @@
 package log
 
 import (
-	pkgPretty "axgit.vixiv.ru/snake/arcella-lib/app/v3/log/prettylog"
+	pkgPretty "github.com/evaxio/arcella-lib/app/v3/log/prettylog"
 	"io"
 	"log/slog"
 	"os"

@@ -1,7 +1,7 @@
 package env
 
 import (
-	osSpecific "axgit.vixiv.ru/snake/arcella-lib/utils/env/os"
+	osSpecific "github.com/evaxio/arcella-lib/utils/env/os"
 )
 
 func IsInIDE() bool {

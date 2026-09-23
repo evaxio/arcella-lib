@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"axgit.vixiv.ru/snake/arcella-lib/crypt/jasypt"
+	"github.com/evaxio/arcella-lib/crypt/jasypt"
 )
 
 const (

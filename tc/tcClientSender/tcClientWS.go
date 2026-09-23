@@ -1,8 +1,8 @@
 package trueConfClient
 
 import (
-	pkgTCCommon "axgit.vixiv.ru/snake/arcella-lib/tc"
-	"axgit.vixiv.ru/snake/arcella-lib/utils"
+	pkgTCCommon "github.com/evaxio/arcella-lib/tc"
+	"github.com/evaxio/arcella-lib/utils"
 	"context"
 	"crypto/tls"
 	"encoding/json"

@@ -1,9 +1,9 @@
 package gin
 
 import (
-	"axgit.vixiv.ru/snake/arcella-lib/utils"
-	pkgF2B "axgit.vixiv.ru/snake/arcella-lib/web/gin/middleware/fail2ban"
-	pkgRL "axgit.vixiv.ru/snake/arcella-lib/web/gin/middleware/requestLog"
+	"github.com/evaxio/arcella-lib/utils"
+	pkgF2B "github.com/evaxio/arcella-lib/web/gin/middleware/fail2ban"
+	pkgRL "github.com/evaxio/arcella-lib/web/gin/middleware/requestLog"
 	"errors"
 	log "log/slog"
 	"net/http"

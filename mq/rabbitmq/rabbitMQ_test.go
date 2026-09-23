@@ -1,7 +1,7 @@
 package rabbitmq
 
 import (
-	"axgit.vixiv.ru/snake/arcella-lib/app/v3/config/basic"
+	"github.com/evaxio/arcella-lib/app/v3/config/basic"
 	"context"
 	"testing"
 	"time"

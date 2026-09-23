@@ -1,7 +1,7 @@
 package basic
 
 import (
-	"axgit.vixiv.ru/snake/arcella-lib/crypt/jasypt"
+	"github.com/evaxio/arcella-lib/crypt/jasypt"
 	"os"
 	"path/filepath"
 	"testing"

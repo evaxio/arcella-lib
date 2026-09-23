@@ -1,7 +1,7 @@
 package v3
 
 import (
-	pkgCfgV3 "axgit.vixiv.ru/snake/arcella-lib/app/v3/config/basic"
+	pkgCfgV3 "github.com/evaxio/arcella-lib/app/v3/config/basic"
 	"context"
 	"log/slog"
 	"os"

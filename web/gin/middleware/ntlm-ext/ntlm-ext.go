@@ -4,7 +4,7 @@ package ntlm
 // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-nlmp/b34032e5-3aae-4bc6-84c3-c6d80eadf7f2
 
 import (
-	pkgCM "axgit.vixiv.ru/snake/arcella-lib/web/gin/middleware/ntlm-ext/cookies"
+	pkgCM "github.com/evaxio/arcella-lib/web/gin/middleware/ntlm-ext/cookies"
 	"encoding/base64"
 	"encoding/binary"
 	"github.com/gin-gonic/gin"

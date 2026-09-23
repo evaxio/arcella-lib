@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	basic "axgit.vixiv.ru/snake/arcella-lib/app/v3/config/basic"
+	basic "github.com/evaxio/arcella-lib/app/v3/config/basic"
 )
 
 // ConfigMailSender has no `default:` tags, so Load() with no config source

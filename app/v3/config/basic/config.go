@@ -1,7 +1,7 @@
 package basic
 
 import (
-	"axgit.vixiv.ru/snake/arcella-lib/utils"
+	"github.com/evaxio/arcella-lib/utils"
 	"errors"
 	"os"
 	"path/filepath"

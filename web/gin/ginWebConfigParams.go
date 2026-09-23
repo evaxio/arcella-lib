@@ -1,7 +1,7 @@
 package gin
 
 import (
-	f2b "axgit.vixiv.ru/snake/arcella-lib/web/gin/middleware/fail2ban"
+	f2b "github.com/evaxio/arcella-lib/web/gin/middleware/fail2ban"
 	"time"
 )
 

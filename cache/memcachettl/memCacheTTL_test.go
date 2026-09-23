@@ -1,7 +1,7 @@
 package memcachettl
 
 import (
-	"axgit.vixiv.ru/snake/arcella-lib/utils"
+	"github.com/evaxio/arcella-lib/utils"
 	"context"
 	"runtime"
 	"sync"
