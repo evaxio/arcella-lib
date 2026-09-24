@@ -29,7 +29,7 @@ func NewDecoder() *CryptDecoder {
 	}
 	password := os.Getenv(envJasyptPassword)
 	if password == "" {
-		slog.Warn("JASYPT_PASSWORD is not set!!!!")
+		slog.Warn("JASYPT_PASSWORD is not set!!!!!")
 	}
 	return &CryptDecoder{
 		password:   password,
