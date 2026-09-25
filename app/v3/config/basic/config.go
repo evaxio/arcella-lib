@@ -1,7 +1,7 @@
 package basic
 
 import (
-	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -10,8 +10,6 @@ import (
 	"time"
 
 	"github.com/evaxio/arcella-lib/utils"
-
-	"log/slog"
 
 	"gopkg.in/yaml.v3"
 )
@@ -33,17 +31,16 @@ type ConfigManagerDecoder interface {
 }
 
 type BasicConfig struct {
-	decoder      ConfigManagerDecoder
-	cfg          interface{}
-	decodeErrors []error
-}
-
-func NewBasicConfig(cfg any) *BasicConfig {
-	return &BasicConfig{cfg: cfg, decoder: NewDecoder()}
+	decoder ConfigManagerDecoder
+	cfg     interface{}
 }
 
 func NewBasicConfigWithDecoder(cfg any, inDecoder ConfigManagerDecoder) *BasicConfig {
 	return &BasicConfig{cfg: cfg, decoder: inDecoder}
+}
+
+func NewBasicConfig(cfg any) *BasicConfig {
+	return &BasicConfig{cfg: cfg, decoder: NewDecoder()}
 }
 
 // Load loading config from file or env:
@@ -56,9 +53,7 @@ func (bc *BasicConfig) Load() error {
 	// Load config from file
 	var fileName string
 	if fileName = bc.getEnvCfgVariable(); fileName == "" {
-		if fileName, err = bc.getDefaultDirConfigFileName(); err != nil {
-			return err
-		}
+		fileName = bc.getDefaultDirConfigFileName()
 	}
 	if fileName != "" && utils.FileExists(fileName) {
 		if err = bc.loadYaml(fileName); err != nil {
@@ -70,17 +65,17 @@ func (bc *BasicConfig) Load() error {
 	bc.modifyStruct()
 
 	// return results
-	return errors.Join(bc.decodeErrors...)
+	return err
 }
 
-// File Config ///////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
 
 func (bc *BasicConfig) loadYaml(fileName string) error {
-	yamlFile, err := os.ReadFile(fileName)
-	if err != nil {
+	if yamlFile, err := os.ReadFile(fileName); err == nil {
+		return yaml.Unmarshal(yamlFile, bc.cfg)
+	} else {
 		return err
 	}
-	return yaml.Unmarshal(yamlFile, bc.cfg)
 }
 
 func (bc *BasicConfig) getEnvCfgVariable() string {
@@ -92,41 +87,44 @@ func (bc *BasicConfig) getEnvCfgVariable() string {
 	return os.Getenv(cfgPrefix) // load from ENV
 }
 
-func (bc *BasicConfig) getDefaultDirConfigFileName() (string, error) {
-	ex, err := os.Executable()
-	if err != nil {
-		return "", err
+func (bc *BasicConfig) getDefaultDirConfigFileName() string {
+	if ex, err := os.Executable(); err == nil {
+		return filepath.Dir(ex) + filepath.Join(string(os.PathSeparator), defaultFileName)
+	} else {
+		panic("getDefaultDirConfigFileName: " + err.Error())
 	}
-	return filepath.Join(filepath.Dir(ex), defaultFileName), nil
+	return ""
 }
 
 // Work with data ///////////////////////////////////////////////////
 
 func (bc *BasicConfig) modifyStruct() {
 	inputValue := reflect.ValueOf(bc.cfg)
-
 	if inputValue.Kind() != reflect.Ptr {
-		panic("ModifyStruct requires a pointer to struct")
+		panic(fmt.Sprintf("ModifyStruct requires a pointer to struct: (got %v)", inputValue.Kind()))
 	}
 	elem := inputValue.Elem()
+
 	if elem.Kind() != reflect.Struct {
-		panic("ModifyStruct requires a pointer to struct")
+		panic(fmt.Sprintf("ModifyStruct requires a pointer to struct: (got %v)", elem.Kind().String()))
 	}
 
-	// Modify in place: preserves unexported fields and avoids deep-copying the whole tree
+	modifiedValue := reflect.New(elem.Type()).Elem()
+
+	// Copy & Modify
 	for i := 0; i < elem.NumField(); i++ {
 		field := elem.Field(i)
-		if !field.CanSet() {
-			continue
-		}
+		copyField := modifiedValue.Field(i)
 		structField := elem.Type().Field(i)
 
 		modifiedFieldValue := bc.modifyValue(field, structField.Tag)
 
-		if modifiedFieldValue.IsValid() && modifiedFieldValue.Type().AssignableTo(field.Type()) {
-			field.Set(modifiedFieldValue)
+		if modifiedFieldValue.IsValid() && modifiedFieldValue.Type().AssignableTo(copyField.Type()) {
+			copyField.Set(modifiedFieldValue)
 		}
 	}
+
+	elem.Set(modifiedValue) // replace the original structure with a modified one
 }
 
 func (bc *BasicConfig) modifyValue(value reflect.Value, stag reflect.StructTag) reflect.Value {
@@ -148,65 +146,74 @@ func (bc *BasicConfig) modifyValue(value reflect.Value, stag reflect.StructTag) 
 			return value
 		}
 		elem := value.Elem()
-		_ = bc.modifyValue(elem, stag)
+		modifiedElem := bc.modifyValue(elem, stag)
+		if modifiedElem.IsValid() {
+			newPtr := reflect.New(modifiedElem.Type())
+			newPtr.Elem().Set(modifiedElem)
+			return newPtr
+		}
 		return value
 
 	case reflect.Slice:
 		if value.IsNil() {
 			return value
 		}
+		newSlice := reflect.MakeSlice(value.Type(), value.Len(), value.Cap())
 		for i := 0; i < value.Len(); i++ {
 			elem := value.Index(i)
-			if !elem.CanSet() {
-				continue
-			}
 			modifiedElem := bc.modifyValue(elem, stag)
 			if modifiedElem.IsValid() {
-				elem.Set(modifiedElem)
+				newSlice.Index(i).Set(modifiedElem)
 			}
 		}
-		return value
+		return newSlice
 
 	case reflect.Array:
+		newArray := reflect.New(value.Type()).Elem()
 		for i := 0; i < value.Len(); i++ {
 			elem := value.Index(i)
-			if !elem.CanSet() {
-				continue
-			}
 			modifiedElem := bc.modifyValue(elem, stag)
 			if modifiedElem.IsValid() {
-				elem.Set(modifiedElem)
+				newArray.Index(i).Set(modifiedElem)
 			}
 		}
-		return value
+		return newArray
 
 	case reflect.Map:
 		if value.IsNil() {
 			return value
 		}
+		newMap := reflect.MakeMap(value.Type())
 		iter := value.MapRange()
 		for iter.Next() {
-			// modify only values (keys are left as is)
-			modifiedVal := bc.modifyValue(iter.Value(), stag)
-			if modifiedVal.IsValid() {
-				value.SetMapIndex(iter.Key(), modifiedVal)
+			key := iter.Key()
+			val := iter.Value()
+
+			// do we need modify key ?
+			// modifiedKey := bc.modifyValue(key, stag)
+			// or only value ?
+			modifiedVal := bc.modifyValue(val, stag)
+
+			//if modifiedKey.IsValid() && modifiedVal.IsValid() {
+			if key.IsValid() && modifiedVal.IsValid() {
+				// newMap.SetMapIndex(modifiedKey, modifiedVal)
+				newMap.SetMapIndex(key, modifiedVal)
 			}
 		}
-		return value
+		return newMap
 
 	case reflect.Struct:
+		newStruct := reflect.New(value.Type()).Elem()
 		for i := 0; i < value.NumField(); i++ {
 			field := value.Field(i)
-			if !field.CanSet() {
-				continue
-			}
 			structField := value.Type().Field(i)
 			modifiedField := bc.modifyValue(field, structField.Tag)
 			if modifiedField.IsValid() {
-				field.Set(modifiedField)
+				// fmt.Printf("set %v\n", structField.Name)
+				newStruct.Field(i).Set(modifiedField)
 			}
 		}
-		return value
+		return newStruct
 
 	default: // as is by default
 		return value
@@ -225,8 +232,7 @@ func (bc *BasicConfig) processString(value reflect.Value, stag reflect.StructTag
 	}
 	if strings.HasPrefix(val, encodedPrefix) && strings.HasSuffix(val, ")") {
 		if decVal, err := bc.decoder.Decode(val[len(encodedPrefix) : len(val)-len(encodedPostfix)]); err != nil {
-			slog.Error("Decode config value", "value", val, "error", err)
-			bc.decodeErrors = append(bc.decodeErrors, err)
+			fmt.Printf("Decode value %s, error: %s\n", val, err.Error())
 		} else {
 			val = decVal
 		}
